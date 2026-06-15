@@ -1,837 +1,841 @@
 <!DOCTYPE html>
-    <html lang="my">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>Gemini Invite Manager</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
-            body { font-family: 'Padauk', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
-            .spinner { border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; width: 20px; height: 20px; display: inline-block; }
-            @keyframes spin { to { transform: rotate(360deg); } }
-            .accordion-content { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
-            .accordion-content.expanded { max-height: 2000px; opacity: 1; overflow: visible; }
-            .rotate-180 { transform: rotate(180deg); transition: transform 0.3s ease; }
-            .rotate-0 { transform: rotate(0deg); transition: transform 0.3s ease; }
-            
-            /* Modal Scroll Fix for Mobile */
-            .modal-body { max-height: calc(100vh - 140px); overflow-y: auto; }
-            
-            /* Custom Scrollbar */
-            ::-webkit-scrollbar { width: 6px; }
-            ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-            ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-            ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        </style>
-    </head>
-    <body class="text-gray-800 antialiased pb-20">
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gemini Invite Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
+        body { font-family: 'Padauk', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
+        .spinner { border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; width: 20px; height: 20px; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .accordion-content { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        .accordion-content.expanded { max-height: 2000px; opacity: 1; overflow: visible; }
+        .rotate-180 { transform: rotate(180deg); transition: transform 0.3s ease; }
+        .rotate-0 { transform: rotate(0deg); transition: transform 0.3s ease; }
+        
+        /* Modal Scroll Fix for Mobile */
+        .modal-body { max-height: calc(100vh - 140px); overflow-y: auto; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased pb-20">
 
-        <!-- Top Header -->
-        <div class="bg-white px-4 py-3 shadow-sm border-b border-gray-200 sticky top-0 z-30 flex justify-between items-center">
-            <div>
-                <h1 class="text-lg font-bold text-gray-900 flex items-center"><i class="fa-solid fa-gem text-blue-600 mr-2"></i>Invite Manager</h1>
-                <p class="text-[11px] text-gray-500">Tracking System</p>
+    <!-- Top Header -->
+    <div class="bg-white px-4 py-3 shadow-sm border-b border-gray-200 sticky top-0 z-30 flex justify-between items-center">
+        <div>
+            <h1 class="text-lg font-bold text-gray-900 flex items-center"><i class="fa-solid fa-gem text-blue-600 mr-2"></i>Invite Manager</h1>
+            <p class="text-[11px] text-gray-500">Tracking System</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="testTelegramBot()" id="testBotBtn" class="w-9 h-9 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition">
+                <i class="fa-brands fa-telegram text-blue-500 text-lg"></i>
+            </button>
+            <button onclick="fetchData()" class="w-9 h-9 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-100 active:bg-blue-200 transition">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto p-4 space-y-4">
+        
+        <!-- Stats Dashboard -->
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-gradient-to-br from-blue-50 to-white p-4 rounded-2xl border border-blue-100 shadow-sm flex flex-col items-center justify-center">
+                <i class="fa-solid fa-user-tie text-blue-400 mb-1"></i>
+                <div class="text-2xl font-bold text-blue-700" id="statTotalManagers">0</div>
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Managers</div>
+            </div>
+            <div class="bg-gradient-to-br from-emerald-50 to-white p-4 rounded-2xl border border-emerald-100 shadow-sm flex flex-col items-center justify-center">
+                <i class="fa-solid fa-users text-emerald-400 mb-1"></i>
+                <div class="text-2xl font-bold text-emerald-700" id="statTotalInvites">0</div>
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Total Invites</div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2">
+            <div class="relative flex-1">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-search"></i></span>
+                <input type="text" id="searchInput" onkeyup="filterDashboard()" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Search...">
+            </div>
+            <select id="platformFilter" onchange="filterDashboard()" class="w-28 bg-gray-50 border border-gray-200 rounded-xl px-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                <option value="All">All App</option>
+                <option value="Telegram">Telegram</option>
+                <option value="Facebook">Facebook</option>
+                <option value="TikTok">TikTok</option>
+            </select>
+        </div>
+
+        <!-- Cards Container (Main View) -->
+        <div id="dashboardCards" class="space-y-3">
+            <div class="text-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <span class="spinner !border-gray-200 !border-t-blue-600 w-8 h-8"></span>
+                <p class="text-gray-500 text-sm mt-3 font-medium">Loading data...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Floating Action Button (Mobile Friendly Add Button) -->
+    <button onclick="openAddModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-300/50 flex items-center justify-center text-xl hover:bg-blue-700 active:scale-95 transition-all z-40 border-2 border-white">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <!-- Add New Invite Modal -->
+    <div id="addModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center z-50 transition-opacity">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all mt-10 sm:mt-0">
+            <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-user-plus text-blue-600 mr-2"></i>New Invite</h3>
+                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body p-5">
+                <form id="inviteForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Manager Email</label>
+                        <input type="email" id="managerEmail" list="managerList" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="manager@gmail.com">
+                        <datalist id="managerList"></datalist>
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-100">
+                        <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Customer Details</label>
+                        <input type="email" id="customerEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition mb-3" placeholder="customer@gmail.com">
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <select id="platform" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="updatePlatformPlaceholder('platform', 'contactInfo')">
+                                <option value="Telegram">Telegram</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="TikTok">TikTok</option>
+                            </select>
+                            <input type="text" id="contactInfo" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="@username">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1">Start Date</label>
+                                <input type="date" id="startDate" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('startDate', 'duration', 'endDate')">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1">Duration</label>
+                                <select id="duration" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('startDate', 'duration', 'endDate')">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1">End Date</label>
+                            <input type="date" id="endDate" required class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm outline-none shadow-inner" readonly>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold p-3.5 rounded-xl hover:bg-blue-700 active:bg-blue-800 transition flex justify-center items-center mt-4 shadow-md">
+                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save Record
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center z-50">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform mt-10 sm:mt-0">
+            <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-pen-to-square text-blue-600 mr-2"></i>Edit Customer</h3>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body p-5">
+                <form id="editForm" class="space-y-4">
+                    <input type="hidden" id="editRowNumber">
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Manager Email</label>
+                        <input type="email" id="editManagerEmail" list="editManagerList" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <datalist id="editManagerList"></datalist>
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-100">
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Customer Email</label>
+                        <input type="email" id="editCustomerEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none mb-3">
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <select id="editPlatform" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="updatePlatformPlaceholder('editPlatform', 'editContactInfo')">
+                                <option value="Telegram">Telegram</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="TikTok">TikTok</option>
+                            </select>
+                            <input type="text" id="editContactInfo" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1">Start Date</label>
+                                <input type="date" id="editStartDate" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="calculateEndDate('editStartDate', 'editDuration', 'editEndDate')">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1">Duration</label>
+                                <select id="editDuration" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="calculateEndDate('editStartDate', 'editDuration', 'editEndDate')">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1">End Date</label>
+                            <input type="date" id="editEndDate" required class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm outline-none shadow-inner" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-2 flex gap-3">
+                        <button type="submit" id="updateBtn" class="w-full bg-blue-600 text-white font-bold p-3.5 rounded-xl hover:bg-blue-700 transition flex justify-center items-center shadow-md">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manager Edit Modal (NEW) -->
+    <div id="editManagerModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center z-50">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform mt-10 sm:mt-0 border border-gray-100">
+            <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 sticky top-0 z-10">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-user-pen text-blue-600 mr-2"></i>Edit Manager Details</h3>
+                <button onclick="closeEditManagerModal()" class="text-gray-400 hover:text-gray-700 bg-white shadow-sm border border-gray-200 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body p-5">
+                <form id="editManagerForm" class="space-y-4">
+                    <input type="hidden" id="editMgrOldEmail">
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Manager Email</label>
+                        <input type="email" id="editMgrNewEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-100">
+                        <label class="block text-xs font-bold text-gray-600 mb-3 uppercase tracking-wide text-blue-600">Manager Working Period (Optional)</label>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1">Start Date</label>
+                                <input type="date" id="editMgrStartDate" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('editMgrStartDate', 'editMgrDuration', 'editMgrEndDate')">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1">Duration</label>
+                                <select id="editMgrDuration" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('editMgrStartDate', 'editMgrDuration', 'editMgrEndDate')">
+                                    <option value="">- Select -</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1">End Date</label>
+                            <input type="date" id="editMgrEndDate" class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm outline-none shadow-inner" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-2 flex gap-3">
+                        <button type="submit" id="updateManagerBtn" class="w-full bg-blue-600 text-white font-bold p-3.5 rounded-xl hover:bg-blue-700 transition flex justify-center items-center shadow-md">
+                            Update All Associated Invites
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modals -->
+    <div id="deleteModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden text-center p-6">
+            <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fa-solid fa-trash-can text-xl text-red-500"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Delete Customer?</h3>
+            <p class="text-xs text-gray-500 mb-5">This action cannot be undone.</p>
+            <div class="flex gap-2">
+                <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold p-2.5 rounded-xl">Cancel</button>
+                <button onclick="executeDelete()" id="confirmDeleteBtn" class="flex-1 bg-red-500 text-white font-bold p-2.5 rounded-xl flex justify-center items-center">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteManagerModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-6 border-2 border-red-100">
+            <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fa-solid fa-user-xmark text-xl text-red-600"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Delete Entire Manager?</h3>
+            <p class="text-xs text-gray-600 mb-3"><strong id="deleteManagerNameDisplay" class="text-gray-900 break-all"></strong></p>
+            <div class="bg-red-50 p-3 rounded-lg border border-red-100 mb-5">
+                <p class="text-[11px] text-red-700 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Will permanently delete ALL customer invites under this manager.</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="testTelegramBot()" id="testBotBtn" class="w-9 h-9 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition">
-                    <i class="fa-brands fa-telegram text-blue-500 text-lg"></i>
-                </button>
-                <button onclick="fetchData()" class="w-9 h-9 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-100 active:bg-blue-200 transition">
-                    <i class="fa-solid fa-rotate-right"></i>
-                </button>
+                <button onclick="closeDeleteManagerModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold p-2.5 rounded-xl">Cancel</button>
+                <button onclick="executeManagerDelete()" id="confirmManagerDeleteBtn" class="flex-1 bg-red-600 text-white font-bold p-2.5 rounded-xl flex justify-center items-center">Delete All</button>
             </div>
         </div>
+    </div>
 
-        <div class="max-w-4xl mx-auto p-4 space-y-4">
+    <!-- Toast -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 px-5 py-3 rounded-full shadow-2xl transform transition-all duration-300 -translate-y-24 opacity-0 z-[60] flex items-center gap-2 font-medium text-sm whitespace-nowrap">
+        <i class="fa-solid fa-circle-check" id="toastIcon"></i>
+        <span id="toastMsg">Success!</span>
+    </div>
+
+    <script>
+        // --- 🚨 သင်၏ Web App URL ကို အောက်တွင် ပြောင်းထည့်ပါ 🚨 ---
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbyT3FPGVx5AS0qBFHoZYyJyV_ILgVdwiLmlYFeJdDB6dru_yE8CYilWvHBDoEcEohFq0Q/exec';
+        
+        let globalData = []; 
+        let targetDeleteRow = null;
+        let targetDeleteManager = null; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const durationOptions = Array.from({length: 18}, (_, i) => `<option value="${i+1}">${i+1} ${i===0?'Month':'Months'}</option>`).join('');
+            document.getElementById('duration').innerHTML = durationOptions;
+            document.getElementById('editDuration').innerHTML = durationOptions;
+            document.getElementById('editMgrDuration').innerHTML += durationOptions;
             
-            <!-- Stats Dashboard -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-gradient-to-br from-blue-50 to-white p-4 rounded-2xl border border-blue-100 shadow-sm flex flex-col items-center justify-center">
-                    <i class="fa-solid fa-user-tie text-blue-400 mb-1"></i>
-                    <div class="text-2xl font-bold text-blue-700" id="statTotalManagers">0</div>
-                    <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Managers</div>
-                </div>
-                <div class="bg-gradient-to-br from-emerald-50 to-white p-4 rounded-2xl border border-emerald-100 shadow-sm flex flex-col items-center justify-center">
-                    <i class="fa-solid fa-users text-emerald-400 mb-1"></i>
-                    <div class="text-2xl font-bold text-emerald-700" id="statTotalInvites">0</div>
-                    <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Total Invites</div>
-                </div>
-            </div>
+            document.getElementById('startDate').valueAsDate = new Date();
+            calculateEndDate('startDate', 'duration', 'endDate');
+            if(scriptUrl !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') fetchData();
+        });
 
-            <!-- Filters Section -->
-            <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2">
-                <div class="relative flex-1">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-search"></i></span>
-                    <input type="text" id="searchInput" onkeyup="filterDashboard()" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Search...">
-                </div>
-                <select id="platformFilter" onchange="filterDashboard()" class="w-28 bg-gray-50 border border-gray-200 rounded-xl px-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
-                    <option value="All">All App</option>
-                    <option value="Telegram">Telegram</option>
-                    <option value="Facebook">Facebook</option>
-                    <option value="TikTok">TikTok</option>
-                </select>
-            </div>
+        function cleanDateString(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const d = new Date(dateStr);
+                if(isNaN(d)) return dateStr;
+                return d.toISOString().split('T')[0];
+            } catch(e) { return dateStr; }
+        }
 
-            <!-- Cards Container (Main View) -->
-            <div id="dashboardCards" class="space-y-3">
-                <div class="text-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                    <span class="spinner !border-gray-200 !border-t-blue-600 w-8 h-8"></span>
-                    <p class="text-gray-500 text-sm mt-3 font-medium">Loading data...</p>
-                </div>
-            </div>
+        function updatePlatformPlaceholder(platId, inputId) {
+            const plat = document.getElementById(platId).value;
+            document.getElementById(inputId).placeholder = plat === 'Telegram' ? "@username or ID" : "Profile Link (URL)";
+        }
 
-        </div>
+        function calculateEndDate(startId, durId, endId) {
+            const startDateStr = document.getElementById(startId).value;
+            const durationStr = document.getElementById(durId).value;
+            if(!startDateStr || !durationStr) {
+                document.getElementById(endId).value = '';
+                return;
+            }
+            let startDate = new Date(startDateStr);
+            let endDate = new Date(startDate);
+            endDate.setMonth(startDate.getMonth() + parseInt(durationStr));
+            document.getElementById(endId).value = endDate.toISOString().split('T')[0];
+        }
 
-        <!-- Floating Action Button (Mobile Friendly Add Button) -->
-        <button onclick="openAddModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-300/50 flex items-center justify-center text-xl hover:bg-blue-700 active:scale-95 transition-all z-40 border-2 border-white">
-            <i class="fa-solid fa-plus"></i>
-        </button>
+        function getDaysLeft(endDateStr) {
+            const end = new Date(cleanDateString(endDateStr));
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            return Math.ceil((end - today) / (1000 * 60 * 60 * 24)); 
+        }
 
-        <!-- Add New Invite Modal -->
-        <div id="addModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center z-50 transition-opacity">
-            <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all mt-10 sm:mt-0">
-                <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                    <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-user-plus text-blue-600 mr-2"></i>New Invite</h3>
-                    <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="modal-body p-5">
-                    <form id="inviteForm" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Manager Email</label>
-                            <input type="email" id="managerEmail" list="managerList" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="manager@gmail.com">
-                            <datalist id="managerList"></datalist>
-                        </div>
-
-                        <div class="pt-2 border-t border-gray-100">
-                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Customer Details</label>
-                            <input type="email" id="customerEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition mb-3" placeholder="customer@gmail.com">
-                            
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <select id="platform" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="updatePlatformPlaceholder('platform', 'contactInfo')">
-                                    <option value="Telegram">Telegram</option>
-                                    <option value="Facebook">Facebook</option>
-                                    <option value="TikTok">TikTok</option>
-                                </select>
-                                <input type="text" id="contactInfo" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="@username">
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-500 mb-1">Start Date</label>
-                                    <input type="date" id="startDate" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('startDate', 'duration', 'endDate')">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-500 mb-1">Duration</label>
-                                    <select id="duration" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('startDate', 'duration', 'endDate')">
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-500 mb-1">End Date</label>
-                                <input type="date" id="endDate" required class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm outline-none shadow-inner" readonly>
-                            </div>
-                        </div>
-
-                        <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold p-3.5 rounded-xl hover:bg-blue-700 active:bg-blue-800 transition flex justify-center items-center mt-4 shadow-md">
-                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save Record
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Customer Edit Modal -->
-        <div id="editModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center z-50">
-            <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform mt-10 sm:mt-0">
-                <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                    <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-pen-to-square text-blue-600 mr-2"></i>Edit Customer</h3>
-                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="modal-body p-5">
-                    <form id="editForm" class="space-y-4">
-                        <input type="hidden" id="editRowNumber">
-                        
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">Manager Email</label>
-                            <input type="email" id="editManagerEmail" list="editManagerList" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <datalist id="editManagerList"></datalist>
-                        </div>
-
-                        <div class="pt-2 border-t border-gray-100">
-                            <label class="block text-xs font-bold text-gray-600 mb-1">Customer Email</label>
-                            <input type="email" id="editCustomerEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none mb-3">
-                            
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <select id="editPlatform" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="updatePlatformPlaceholder('editPlatform', 'editContactInfo')">
-                                    <option value="Telegram">Telegram</option>
-                                    <option value="Facebook">Facebook</option>
-                                    <option value="TikTok">TikTok</option>
-                                </select>
-                                <input type="text" id="editContactInfo" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-500 mb-1">Start Date</label>
-                                    <input type="date" id="editStartDate" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="calculateEndDate('editStartDate', 'editDuration', 'editEndDate')">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-500 mb-1">Duration</label>
-                                    <select id="editDuration" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="calculateEndDate('editStartDate', 'editDuration', 'editEndDate')">
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-500 mb-1">End Date</label>
-                                <input type="date" id="editEndDate" required class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm outline-none shadow-inner" readonly>
-                            </div>
-                        </div>
-                        
-                        <div class="pt-2 flex gap-3">
-                            <button type="submit" id="updateBtn" class="w-full bg-blue-600 text-white font-bold p-3.5 rounded-xl hover:bg-blue-700 transition flex justify-center items-center shadow-md">
-                                Save Changes
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Manager Edit Modal (NEW) -->
-        <div id="editManagerModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center z-50">
-            <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform mt-10 sm:mt-0 border border-gray-100">
-                <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 sticky top-0 z-10">
-                    <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-user-pen text-blue-600 mr-2"></i>Edit Manager Details</h3>
-                    <button onclick="closeEditManagerModal()" class="text-gray-400 hover:text-gray-700 bg-white shadow-sm border border-gray-200 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="modal-body p-5">
-                    <form id="editManagerForm" class="space-y-4">
-                        <input type="hidden" id="editMgrOldEmail">
-                        
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Manager Email</label>
-                            <input type="email" id="editMgrNewEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
-                        </div>
-
-                        <div class="pt-2 border-t border-gray-100">
-                            <label class="block text-xs font-bold text-gray-600 mb-3 uppercase tracking-wide text-blue-600">Manager Working Period (Optional)</label>
-                            
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-500 mb-1">Start Date</label>
-                                    <input type="date" id="editMgrStartDate" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('editMgrStartDate', 'editMgrDuration', 'editMgrEndDate')">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-500 mb-1">Duration</label>
-                                    <select id="editMgrDuration" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('editMgrStartDate', 'editMgrDuration', 'editMgrEndDate')">
-                                        <option value="">- Select -</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-500 mb-1">End Date</label>
-                                <input type="date" id="editMgrEndDate" class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm outline-none shadow-inner" readonly>
-                            </div>
-                        </div>
-                        
-                        <div class="pt-2 flex gap-3">
-                            <button type="submit" id="updateManagerBtn" class="w-full bg-blue-600 text-white font-bold p-3.5 rounded-xl hover:bg-blue-700 transition flex justify-center items-center shadow-md">
-                                Update All Associated Invites
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Delete Modals -->
-        <div id="deleteModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden text-center p-6">
-                <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i class="fa-solid fa-trash-can text-xl text-red-500"></i>
-                </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-1">Delete Customer?</h3>
-                <p class="text-xs text-gray-500 mb-5">This action cannot be undone.</p>
-                <div class="flex gap-2">
-                    <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold p-2.5 rounded-xl">Cancel</button>
-                    <button onclick="executeDelete()" id="confirmDeleteBtn" class="flex-1 bg-red-500 text-white font-bold p-2.5 rounded-xl flex justify-center items-center">Delete</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="deleteManagerModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-6 border-2 border-red-100">
-                <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i class="fa-solid fa-user-xmark text-xl text-red-600"></i>
-                </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-1">Delete Entire Manager?</h3>
-                <p class="text-xs text-gray-600 mb-3"><strong id="deleteManagerNameDisplay" class="text-gray-900 break-all"></strong></p>
-                <div class="bg-red-50 p-3 rounded-lg border border-red-100 mb-5">
-                    <p class="text-[11px] text-red-700 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Will permanently delete ALL customer invites under this manager.</p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="closeDeleteManagerModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold p-2.5 rounded-xl">Cancel</button>
-                    <button onclick="executeManagerDelete()" id="confirmManagerDeleteBtn" class="flex-1 bg-red-600 text-white font-bold p-2.5 rounded-xl flex justify-center items-center">Delete All</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Toast -->
-        <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 px-5 py-3 rounded-full shadow-2xl transform transition-all duration-300 -translate-y-24 opacity-0 z-[60] flex items-center gap-2 font-medium text-sm whitespace-nowrap">
-            <i class="fa-solid fa-circle-check" id="toastIcon"></i>
-            <span id="toastMsg">Success!</span>
-        </div>
-
-        <script>
-            // --- 🚨 သင်၏ Web App URL ကို အောက်တွင် ပြောင်းထည့်ပါ 🚨 ---
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbyT3FPGVx5AS0qBFHoZYyJyV_ILgVdwiLmlYFeJdDB6dru_yE8CYilWvHBDoEcEohFq0Q/exec';
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            document.getElementById('toastMsg').textContent = msg;
             
-            let globalData = []; 
-            let targetDeleteRow = null;
-            let targetDeleteManager = null; 
-
-            document.addEventListener('DOMContentLoaded', () => {
-                const durationOptions = Array.from({length: 18}, (_, i) => `<option value="${i+1}">${i+1} ${i===0?'Month':'Months'}</option>`).join('');
-                document.getElementById('duration').innerHTML = durationOptions;
-                document.getElementById('editDuration').innerHTML = durationOptions;
-                document.getElementById('editMgrDuration').innerHTML += durationOptions;
-                
-                document.getElementById('startDate').valueAsDate = new Date();
-                calculateEndDate('startDate', 'duration', 'endDate');
-                if(scriptUrl !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') fetchData();
-            });
-
-            function cleanDateString(dateStr) {
-                if (!dateStr) return '';
-                try {
-                    const d = new Date(dateStr);
-                    if(isNaN(d)) return dateStr;
-                    return d.toISOString().split('T')[0];
-                } catch(e) { return dateStr; }
+            if(type === 'error') {
+                toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 bg-red-600 text-white px-5 py-3 rounded-full shadow-xl transform transition-all duration-300 z-[60] flex items-center gap-2 font-medium text-sm';
+                icon.className = 'fa-solid fa-triangle-exclamation text-white';
+            } else {
+                toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-xl transform transition-all duration-300 z-[60] flex items-center gap-2 font-medium text-sm';
+                icon.className = 'fa-solid fa-circle-check text-green-400';
             }
+            
+            toast.classList.remove('-translate-y-24', 'opacity-0');
+            setTimeout(() => { toast.classList.add('-translate-y-24', 'opacity-0'); }, 3000);
+        }
 
-            function updatePlatformPlaceholder(platId, inputId) {
-                const plat = document.getElementById(platId).value;
-                document.getElementById(inputId).placeholder = plat === 'Telegram' ? "@username or ID" : "Profile Link (URL)";
-            }
+        function toggleAccordion(id) {
+            const content = document.getElementById(`content-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            content.classList.toggle('expanded');
+            icon.classList.toggle('rotate-180');
+        }
 
-            function calculateEndDate(startId, durId, endId) {
-                const startDateStr = document.getElementById(startId).value;
-                const durationStr = document.getElementById(durId).value;
-                if(!startDateStr || !durationStr) {
-                    document.getElementById(endId).value = '';
-                    return;
-                }
-                let startDate = new Date(startDateStr);
-                let endDate = new Date(startDate);
-                endDate.setMonth(startDate.getMonth() + parseInt(durationStr));
-                document.getElementById(endId).value = endDate.toISOString().split('T')[0];
-            }
+        // --- STREAMING_CHUNK:Defining Event Listeners... ---
+        // --- Modals Handlers ---
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+            document.getElementById('addModal').classList.add('flex');
+            setTimeout(() => document.getElementById('managerEmail').focus(), 100);
+        }
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('addModal').classList.remove('flex');
+            document.getElementById('inviteForm').reset();
+            document.getElementById('startDate').valueAsDate = new Date();
+            calculateEndDate('startDate', 'duration', 'endDate');
+        }
 
-            function getDaysLeft(endDateStr) {
-                const end = new Date(cleanDateString(endDateStr));
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                return Math.ceil((end - today) / (1000 * 60 * 60 * 24)); 
-            }
+        function prepAddUserForManager(managerEmail, event) {
+            event.stopPropagation(); 
+            openAddModal();
+            document.getElementById('managerEmail').value = managerEmail;
+            document.getElementById('customerEmail').focus();
+        }
 
-            function showToast(msg, type = 'success') {
-                const toast = document.getElementById('toast');
-                const icon = document.getElementById('toastIcon');
-                document.getElementById('toastMsg').textContent = msg;
-                
-                if(type === 'error') {
-                    toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 bg-red-600 text-white px-5 py-3 rounded-full shadow-xl transform transition-all duration-300 z-[60] flex items-center gap-2 font-medium text-sm';
-                    icon.className = 'fa-solid fa-triangle-exclamation text-white';
-                } else {
-                    toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-xl transform transition-all duration-300 z-[60] flex items-center gap-2 font-medium text-sm';
-                    icon.className = 'fa-solid fa-circle-check text-green-400';
-                }
-                
-                toast.classList.remove('-translate-y-24', 'opacity-0');
-                setTimeout(() => { toast.classList.add('-translate-y-24', 'opacity-0'); }, 3000);
-            }
+        // Edit Customer Modal
+        function openEditModal(rowNumber) {
+            const record = globalData.find(r => r.rowNumber === rowNumber);
+            if(!record) return;
+            document.getElementById('editRowNumber').value = record.rowNumber;
+            document.getElementById('editManagerEmail').value = record.manager;
+            document.getElementById('editCustomerEmail').value = record.customers;
+            document.getElementById('editPlatform').value = record.platform;
+            document.getElementById('editContactInfo').value = record.contact;
+            document.getElementById('editStartDate').value = cleanDateString(record.startDate);
+            document.getElementById('editDuration').value = record.duration;
+            document.getElementById('editEndDate').value = cleanDateString(record.endDate);
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+        function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); document.getElementById('editModal').classList.remove('flex'); }
 
-            function toggleAccordion(id) {
-                const content = document.getElementById(`content-${id}`);
-                const icon = document.getElementById(`icon-${id}`);
-                content.classList.toggle('expanded');
-                icon.classList.toggle('rotate-180');
-            }
+        // Edit Manager Modal (Dates & Duration)
+        function openEditManagerModal(managerEmail, event) {
+            event.stopPropagation(); 
+            const record = globalData.find(r => r.manager === managerEmail && (r.managerStartDate || r.managerEndDate)) || globalData.find(r => r.manager === managerEmail);
+            
+            document.getElementById('editMgrOldEmail').value = managerEmail;
+            document.getElementById('editMgrNewEmail').value = managerEmail;
+            document.getElementById('editMgrStartDate').value = record && record.managerStartDate ? cleanDateString(record.managerStartDate) : '';
+            document.getElementById('editMgrDuration').value = record && record.managerDuration ? record.managerDuration : '';
+            document.getElementById('editMgrEndDate').value = record && record.managerEndDate ? cleanDateString(record.managerEndDate) : '';
+            
+            document.getElementById('editManagerModal').classList.remove('hidden');
+            document.getElementById('editManagerModal').classList.add('flex');
+        }
+        function closeEditManagerModal() { document.getElementById('editManagerModal').classList.add('hidden'); document.getElementById('editManagerModal').classList.remove('flex'); }
 
-            // --- Modals Handlers ---
-            function openAddModal() {
-                document.getElementById('addModal').classList.remove('hidden');
-                document.getElementById('addModal').classList.add('flex');
-                setTimeout(() => document.getElementById('managerEmail').focus(), 100);
-            }
-            function closeAddModal() {
-                document.getElementById('addModal').classList.add('hidden');
-                document.getElementById('addModal').classList.remove('flex');
-                document.getElementById('inviteForm').reset();
-                document.getElementById('startDate').valueAsDate = new Date();
-                calculateEndDate('startDate', 'duration', 'endDate');
-            }
+        function openDeleteModal(rowNumber) {
+            targetDeleteRow = rowNumber;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+        }
+        function closeDeleteModal() { targetDeleteRow = null; document.getElementById('deleteModal').classList.add('hidden'); document.getElementById('deleteModal').classList.remove('flex'); }
 
-            function prepAddUserForManager(managerEmail, event) {
-                event.stopPropagation(); 
-                openAddModal();
-                document.getElementById('managerEmail').value = managerEmail;
-                document.getElementById('customerEmail').focus();
-            }
+        function openDeleteManagerModal(managerEmail, event) {
+            event.stopPropagation(); 
+            targetDeleteManager = managerEmail;
+            document.getElementById('deleteManagerNameDisplay').textContent = managerEmail;
+            document.getElementById('deleteManagerModal').classList.remove('hidden');
+            document.getElementById('deleteManagerModal').classList.add('flex');
+        }
+        function closeDeleteManagerModal() { targetDeleteManager = null; document.getElementById('deleteManagerModal').classList.add('hidden'); document.getElementById('deleteManagerModal').classList.remove('flex'); }
 
-            // Edit Customer Modal
-            function openEditModal(rowNumber) {
-                const record = globalData.find(r => r.rowNumber === rowNumber);
-                if(!record) return;
-                document.getElementById('editRowNumber').value = record.rowNumber;
-                document.getElementById('editManagerEmail').value = record.manager;
-                document.getElementById('editCustomerEmail').value = record.customers;
-                document.getElementById('editPlatform').value = record.platform;
-                document.getElementById('editContactInfo').value = record.contact;
-                document.getElementById('editStartDate').value = cleanDateString(record.startDate);
-                document.getElementById('editDuration').value = record.duration;
-                document.getElementById('editEndDate').value = cleanDateString(record.endDate);
-                document.getElementById('editModal').classList.remove('hidden');
-                document.getElementById('editModal').classList.add('flex');
-            }
-            function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); document.getElementById('editModal').classList.remove('flex'); }
+        // Get Existing Manager Dates for Add/Update (Customer Modals)
+        function getExistingManagerDates(managerEmail) {
+            const existingMgr = globalData.find(r => r.manager === managerEmail && (r.managerStartDate || r.managerEndDate));
+            return {
+                managerStartDate: existingMgr ? existingMgr.managerStartDate : '',
+                managerDuration: existingMgr ? existingMgr.managerDuration : '',
+                managerEndDate: existingMgr ? existingMgr.managerEndDate : ''
+            };
+        }
 
-            // Edit Manager Modal (Dates & Duration)
-            function openEditManagerModal(managerEmail, event) {
-                event.stopPropagation(); 
-                const record = globalData.find(r => r.manager === managerEmail && (r.managerStartDate || r.managerEndDate)) || globalData.find(r => r.manager === managerEmail);
-                
-                document.getElementById('editMgrOldEmail').value = managerEmail;
-                document.getElementById('editMgrNewEmail').value = managerEmail;
-                document.getElementById('editMgrStartDate').value = record && record.managerStartDate ? cleanDateString(record.managerStartDate) : '';
-                document.getElementById('editMgrDuration').value = record && record.managerDuration ? record.managerDuration : '';
-                document.getElementById('editMgrEndDate').value = record && record.managerEndDate ? cleanDateString(record.managerEndDate) : '';
-                
-                document.getElementById('editManagerModal').classList.remove('hidden');
-                document.getElementById('editManagerModal').classList.add('flex');
-            }
-            function closeEditManagerModal() { document.getElementById('editManagerModal').classList.add('hidden'); document.getElementById('editManagerModal').classList.remove('flex'); }
+        // --- Submissions ---
+        document.getElementById('inviteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
 
-            function openDeleteModal(rowNumber) {
-                targetDeleteRow = rowNumber;
-                document.getElementById('deleteModal').classList.remove('hidden');
-                document.getElementById('deleteModal').classList.add('flex');
-            }
-            function closeDeleteModal() { targetDeleteRow = null; document.getElementById('deleteModal').classList.add('hidden'); document.getElementById('deleteModal').classList.remove('flex'); }
+            const mgrEmail = document.getElementById('managerEmail').value.trim();
+            const mgrDates = getExistingManagerDates(mgrEmail); // Maintain existing manager dates
 
-            function openDeleteManagerModal(managerEmail, event) {
-                event.stopPropagation(); 
-                targetDeleteManager = managerEmail;
-                document.getElementById('deleteManagerNameDisplay').textContent = managerEmail;
-                document.getElementById('deleteManagerModal').classList.remove('hidden');
-                document.getElementById('deleteManagerModal').classList.add('flex');
-            }
-            function closeDeleteManagerModal() { targetDeleteManager = null; document.getElementById('deleteManagerModal').classList.add('hidden'); document.getElementById('deleteManagerModal').classList.remove('flex'); }
+            const data = {
+                action: 'add',
+                manager: mgrEmail,
+                customers: document.getElementById('customerEmail').value.trim(), 
+                platform: document.getElementById('platform').value,
+                contact: document.getElementById('contactInfo').value.trim(),
+                startDate: document.getElementById('startDate').value,
+                duration: document.getElementById('duration').value,
+                endDate: document.getElementById('endDate').value,
+                managerStartDate: mgrDates.managerStartDate,
+                managerDuration: mgrDates.managerDuration,
+                managerEndDate: mgrDates.managerEndDate
+            };
 
-            // Get Existing Manager Dates for Add/Update (Customer Modals)
-            function getExistingManagerDates(managerEmail) {
-                const existingMgr = globalData.find(r => r.manager === managerEmail && (r.managerStartDate || r.managerEndDate));
-                return {
-                    managerStartDate: existingMgr ? existingMgr.managerStartDate : '',
-                    managerDuration: existingMgr ? existingMgr.managerDuration : '',
-                    managerEndDate: existingMgr ? existingMgr.managerEndDate : ''
-                };
-            }
+            const success = await sendData(data, btn, originalHTML, 'Record saved successfully!');
+            if (success) closeAddModal();
+        });
 
-            // --- Submissions ---
-            document.getElementById('inviteForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('submitBtn');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('updateBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
 
-                const mgrEmail = document.getElementById('managerEmail').value.trim();
-                const mgrDates = getExistingManagerDates(mgrEmail); // Maintain existing manager dates
+            const mgrEmail = document.getElementById('editManagerEmail').value.trim();
+            const mgrDates = getExistingManagerDates(mgrEmail); // Maintain existing manager dates
 
-                const data = {
-                    action: 'add',
-                    manager: mgrEmail,
-                    customers: document.getElementById('customerEmail').value.trim(), 
-                    platform: document.getElementById('platform').value,
-                    contact: document.getElementById('contactInfo').value.trim(),
-                    startDate: document.getElementById('startDate').value,
-                    duration: document.getElementById('duration').value,
-                    endDate: document.getElementById('endDate').value,
-                    managerStartDate: mgrDates.managerStartDate,
-                    managerDuration: mgrDates.managerDuration,
-                    managerEndDate: mgrDates.managerEndDate
-                };
+            const data = {
+                action: 'update',
+                rowNumber: document.getElementById('editRowNumber').value,
+                manager: mgrEmail,
+                customers: document.getElementById('editCustomerEmail').value.trim(), 
+                platform: document.getElementById('editPlatform').value,
+                contact: document.getElementById('editContactInfo').value.trim(),
+                startDate: document.getElementById('editStartDate').value,
+                duration: document.getElementById('editDuration').value,
+                endDate: document.getElementById('editEndDate').value,
+                managerStartDate: mgrDates.managerStartDate,
+                managerDuration: mgrDates.managerDuration,
+                managerEndDate: mgrDates.managerEndDate
+            };
 
-                const success = await sendData(data, btn, originalHTML, 'Record saved successfully!');
-                if (success) closeAddModal();
-            });
+            const success = await sendData(data, btn, originalHTML, 'Customer updated successfully!');
+            if(success) closeEditModal();
+        });
 
-            document.getElementById('editForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('updateBtn');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
+        document.getElementById('editManagerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('updateManagerBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
 
-                const mgrEmail = document.getElementById('editManagerEmail').value.trim();
-                const mgrDates = getExistingManagerDates(mgrEmail); // Maintain existing manager dates
+            const data = {
+                action: 'updateManager',
+                oldManager: document.getElementById('editMgrOldEmail').value,
+                newManager: document.getElementById('editMgrNewEmail').value.trim(),
+                managerStartDate: document.getElementById('editMgrStartDate').value,
+                managerDuration: document.getElementById('editMgrDuration').value,
+                managerEndDate: document.getElementById('editMgrEndDate').value
+            };
 
-                const data = {
-                    action: 'update',
-                    rowNumber: document.getElementById('editRowNumber').value,
-                    manager: mgrEmail,
-                    customers: document.getElementById('editCustomerEmail').value.trim(), 
-                    platform: document.getElementById('editPlatform').value,
-                    contact: document.getElementById('editContactInfo').value.trim(),
-                    startDate: document.getElementById('editStartDate').value,
-                    duration: document.getElementById('editDuration').value,
-                    endDate: document.getElementById('editEndDate').value,
-                    managerStartDate: mgrDates.managerStartDate,
-                    managerDuration: mgrDates.managerDuration,
-                    managerEndDate: mgrDates.managerEndDate
-                };
+            const success = await sendData(data, btn, originalHTML, 'Manager updated successfully!');
+            if(success) closeEditManagerModal();
+        });
 
-                const success = await sendData(data, btn, originalHTML, 'Customer updated successfully!');
-                if(success) closeEditModal();
-            });
+        async function executeDelete() {
+            if(!targetDeleteRow) return;
+            const btn = document.getElementById('confirmDeleteBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner !border-t-white !w-5 !h-5"></span>`; btn.disabled = true;
 
-            document.getElementById('editManagerForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('updateManagerBtn');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
+            const data = { action: 'delete', rowNumber: targetDeleteRow };
+            const success = await sendData(data, btn, originalHTML, 'Record deleted permanently.');
+            if(success) closeDeleteModal();
+        }
 
-                const data = {
-                    action: 'updateManager',
-                    oldManager: document.getElementById('editMgrOldEmail').value,
-                    newManager: document.getElementById('editMgrNewEmail').value.trim(),
-                    managerStartDate: document.getElementById('editMgrStartDate').value,
-                    managerDuration: document.getElementById('editMgrDuration').value,
-                    managerEndDate: document.getElementById('editMgrEndDate').value
-                };
+        async function executeManagerDelete() {
+            if(!targetDeleteManager) return;
+            const btn = document.getElementById('confirmManagerDeleteBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner !border-t-white !w-5 !h-5"></span>`; btn.disabled = true;
 
-                const success = await sendData(data, btn, originalHTML, 'Manager updated successfully!');
-                if(success) closeEditManagerModal();
-            });
+            const data = { action: 'deleteManager', manager: targetDeleteManager };
+            const success = await sendData(data, btn, originalHTML, 'Manager and records deleted.');
+            if(success) closeDeleteManagerModal();
+        }
 
-            async function executeDelete() {
-                if(!targetDeleteRow) return;
-                const btn = document.getElementById('confirmDeleteBtn');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = `<span class="spinner !border-t-white !w-5 !h-5"></span>`; btn.disabled = true;
-
-                const data = { action: 'delete', rowNumber: targetDeleteRow };
-                const success = await sendData(data, btn, originalHTML, 'Record deleted permanently.');
-                if(success) closeDeleteModal();
-            }
-
-            async function executeManagerDelete() {
-                if(!targetDeleteManager) return;
-                const btn = document.getElementById('confirmManagerDeleteBtn');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = `<span class="spinner !border-t-white !w-5 !h-5"></span>`; btn.disabled = true;
-
-                const data = { action: 'deleteManager', manager: targetDeleteManager };
-                const success = await sendData(data, btn, originalHTML, 'Manager and records deleted.');
-                if(success) closeDeleteManagerModal();
-            }
-
-            async function sendData(data, btnElement, originalBtnHTML, successMsg) {
-                try {
-                    const response = await fetch(scriptUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(data),
-                        redirect: 'follow'
-                    });
-                    const result = JSON.parse(await response.text());
-                    if(result.status === 'success') {
-                        showToast(successMsg);
-                        fetchData(); 
-                        return true;
-                    } else throw new Error();
-                } catch (error) {
-                    showToast('Execution Error. Check Network.', 'error');
-                    return false;
-                } finally {
-                    btnElement.innerHTML = originalBtnHTML;
-                    btnElement.disabled = false;
-                }
-            }
-
-            async function testTelegramBot() {
-                if (scriptUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
-                    showToast('Please set Web App URL first.', 'error');
-                    return;
-                }
-
-                const btn = document.getElementById('testBotBtn');
-                const originalBtnHTML = btn.innerHTML;
-                btn.innerHTML = `<span class="spinner !border-gray-400 !border-t-blue-600 w-4 h-4"></span>`;
-                btn.disabled = true;
-
-                try {
-                    const response = await fetch(scriptUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({ action: 'testTelegram' }),
-                        redirect: 'follow'
-                    });
-                    const result = JSON.parse(await response.text());
-                    
-                    if (result.status === 'success') {
-                        showToast('Test message sent to Telegram!', 'success');
-                    } else {
-                        throw new Error(result.message || 'Error');
-                    }
-                } catch (error) {
-                    showToast('Failed to send test message.', 'error');
-                } finally {
-                    btn.innerHTML = originalBtnHTML;
-                    btn.disabled = false;
-                }
-            }
-
-            // --- Fetch & Render ---
-            async function fetchData() {
-                if (scriptUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') return;
-                const container = document.getElementById('dashboardCards');
-                container.innerHTML = `<div class="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-sm"><span class="spinner !border-gray-200 !border-t-blue-600 w-8 h-8"></span><p class="text-gray-500 text-sm mt-3 font-medium">Syncing data...</p></div>`;
-
-                try {
-                    const fetchUrl = `${scriptUrl}?action=get&t=${new Date().getTime()}`;
-                    const response = await fetch(fetchUrl, { method: 'GET', redirect: 'follow' });
-                    globalData = JSON.parse(await response.text());
-                    
-                    const uniqueManagers = [...new Set(globalData.map(item => item.manager))];
-                    
-                    const optionsHtml = uniqueManagers.map(mgr => `<option value="${mgr}">`).join('');
-                    document.getElementById('managerList').innerHTML = optionsHtml;
-                    document.getElementById('editManagerList').innerHTML = optionsHtml;
-
-                    renderCards(globalData);
-                    filterDashboard(); 
-                } catch (error) {
-                    container.innerHTML = `<div class="text-center py-10 bg-white rounded-2xl border border-red-200 shadow-sm"><p class="text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i><br>Connection Failed</p><p class="text-xs text-gray-500 mt-2">Check your Web App URL.</p></div>`;
-                }
-            }
-
-            function renderCards(dataToRender) {
-                const container = document.getElementById('dashboardCards');
-                container.innerHTML = '';
-                
-                const groupedData = {};
-                dataToRender.forEach(row => {
-                    const mgr = row.manager; 
-                    if(!groupedData[mgr]) groupedData[mgr] = [];
-                    groupedData[mgr].push(row);
+        async function sendData(data, btnElement, originalBtnHTML, successMsg) {
+            try {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(data),
+                    redirect: 'follow'
                 });
+                const result = JSON.parse(await response.text());
+                if(result.status === 'success') {
+                    showToast(successMsg);
+                    fetchData(); 
+                    return true;
+                } else throw new Error();
+            } catch (error) {
+                showToast('Execution Error. Check Network.', 'error');
+                return false;
+            } finally {
+                btnElement.innerHTML = originalBtnHTML;
+                btnElement.disabled = false;
+            }
+        }
 
-                document.getElementById('statTotalManagers').innerText = Object.keys(groupedData).length;
-                document.getElementById('statTotalInvites').innerText = dataToRender.length;
+        async function testTelegramBot() {
+            if (scriptUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                showToast('Please set Web App URL first.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('testBotBtn');
+            const originalBtnHTML = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner !border-gray-400 !border-t-blue-600 w-4 h-4"></span>`;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'testTelegram' }),
+                    redirect: 'follow'
+                });
+                const result = JSON.parse(await response.text());
                 
-                if(dataToRender.length === 0) {
-                    container.innerHTML = `<div class="text-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm"><p class="text-gray-500 text-sm font-medium">No records found.</p></div>`;
-                    return;
+                if (result.status === 'success') {
+                    showToast('Test message sent to Telegram!', 'success');
+                } else {
+                    throw new Error(result.message || 'Error');
+                }
+            } catch (error) {
+                showToast('Failed to send test message.', 'error');
+            } finally {
+                btn.innerHTML = originalBtnHTML;
+                btn.disabled = false;
+            }
+        }
+
+        // --- STREAMING_CHUNK:Fetching Data & Updating UI... ---
+        async function fetchData() {
+            if (scriptUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') return;
+            const container = document.getElementById('dashboardCards');
+            container.innerHTML = `<div class="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-sm"><span class="spinner !border-gray-200 !border-t-blue-600 w-8 h-8"></span><p class="text-gray-500 text-sm mt-3 font-medium">Syncing data...</p></div>`;
+
+            try {
+                const fetchUrl = `${scriptUrl}?action=get&t=${new Date().getTime()}`;
+                const response = await fetch(fetchUrl, { method: 'GET', redirect: 'follow' });
+                globalData = JSON.parse(await response.text());
+                
+                const uniqueManagers = [...new Set(globalData.map(item => item.manager))];
+                
+                const optionsHtml = uniqueManagers.map(mgr => `<option value="${mgr}">`).join('');
+                document.getElementById('managerList').innerHTML = optionsHtml;
+                document.getElementById('editManagerList').innerHTML = optionsHtml;
+
+                renderCards(globalData);
+                filterDashboard(); 
+            } catch (error) {
+                container.innerHTML = `<div class="text-center py-10 bg-white rounded-2xl border border-red-200 shadow-sm"><p class="text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i><br>Connection Failed</p><p class="text-xs text-gray-500 mt-2">Check your Web App URL.</p></div>`;
+            }
+        }
+
+        function renderCards(dataToRender) {
+            const container = document.getElementById('dashboardCards');
+            container.innerHTML = '';
+            
+            const groupedData = {};
+            dataToRender.forEach(row => {
+                const mgr = row.manager; 
+                if(!groupedData[mgr]) groupedData[mgr] = [];
+                groupedData[mgr].push(row);
+            });
+
+            document.getElementById('statTotalManagers').innerText = Object.keys(groupedData).length;
+            document.getElementById('statTotalInvites').innerText = dataToRender.length;
+            
+            if(dataToRender.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm"><p class="text-gray-500 text-sm font-medium">No records found.</p></div>`;
+                return;
+            }
+
+            let index = 0;
+            for (const [managerEmail, customers] of Object.entries(groupedData)) {
+                index++;
+                const limit = 5;
+                const sortedCustomers = [...customers].reverse();
+                
+                let minDaysLeft = Infinity;
+                let customersHTML = '';
+                let stats = { active: 0, warning: 0, critical: 0 };
+                
+                // Extract Manager Dates Information
+                let mgrDatesDisplay = '';
+                const recordWithMgrData = customers.find(c => c.managerStartDate || c.managerEndDate);
+                if (recordWithMgrData) {
+                    const mStart = recordWithMgrData.managerStartDate ? cleanDateString(recordWithMgrData.managerStartDate) : '-';
+                    const mEnd = recordWithMgrData.managerEndDate ? cleanDateString(recordWithMgrData.managerEndDate) : '-';
+                    const mDur = recordWithMgrData.managerDuration ? recordWithMgrData.managerDuration + 'm' : '';
+                    
+                    if(mStart !== '-' || mEnd !== '-') {
+                        mgrDatesDisplay = `
+                            <div class="text-[9px] text-gray-500 mt-1.5 flex flex-wrap gap-2">
+                                <span title="Start Date" class="whitespace-nowrap"><i class="fa-regular fa-calendar-check mr-1 opacity-70"></i>${mStart}</span>
+                                <span title="End Date" class="whitespace-nowrap"><i class="fa-regular fa-calendar-xmark mr-1 opacity-70"></i>${mEnd} ${mDur ? '('+mDur+')' : ''}</span>
+                            </div>`;
+                    }
                 }
 
-                let index = 0;
-                for (const [managerEmail, customers] of Object.entries(groupedData)) {
-                    index++;
-                    const limit = 5;
-                    const sortedCustomers = [...customers].reverse();
+                sortedCustomers.forEach(cust => {
+                    const daysLeft = getDaysLeft(cust.endDate);
+                    if (daysLeft < minDaysLeft) minDaysLeft = daysLeft; 
                     
-                    let minDaysLeft = Infinity;
-                    let customersHTML = '';
-                    let stats = { active: 0, warning: 0, critical: 0 };
-                    
-                    // Extract Manager Dates Information
-                    let mgrDatesDisplay = '';
-                    const recordWithMgrData = customers.find(c => c.managerStartDate || c.managerEndDate);
-                    if (recordWithMgrData) {
-                        const mStart = recordWithMgrData.managerStartDate ? cleanDateString(recordWithMgrData.managerStartDate) : '-';
-                        const mEnd = recordWithMgrData.managerEndDate ? cleanDateString(recordWithMgrData.managerEndDate) : '-';
-                        const mDur = recordWithMgrData.managerDuration ? recordWithMgrData.managerDuration + 'm' : '';
-                        
-                        if(mStart !== '-' || mEnd !== '-') {
-                            mgrDatesDisplay = `
-                                <div class="text-[10px] text-gray-500 mt-1 flex gap-3">
-                                    <span title="Start Date"><i class="fa-regular fa-calendar-check mr-1 opacity-70"></i>${mStart}</span>
-                                    <span title="End Date"><i class="fa-regular fa-calendar-xmark mr-1 opacity-70"></i>${mEnd} ${mDur ? '('+mDur+')' : ''}</span>
-                                </div>`;
-                        }
+                    let daysBg = '';
+                    let daysText = '';
+
+                    if (daysLeft < 0) {
+                        stats.critical++;
+                        daysBg = 'bg-red-50 text-red-600 border-red-100';
+                        daysText = 'Expired';
+                    }
+                    else if (daysLeft <= 1) {
+                        stats.critical++;
+                        daysBg = 'bg-red-50 text-red-600 border-red-100';
+                        daysText = `${daysLeft} Day Left`;
+                    }
+                    else if (daysLeft <= 7) {
+                        stats.warning++;
+                        daysBg = 'bg-orange-50 text-orange-600 border-orange-100';
+                        daysText = `${daysLeft} Days`;
+                    }
+                    else {
+                        stats.active++;
+                        daysBg = 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                        daysText = `${daysLeft} Days`;
                     }
 
-                    sortedCustomers.forEach(cust => {
-                        const daysLeft = getDaysLeft(cust.endDate);
-                        if (daysLeft < minDaysLeft) minDaysLeft = daysLeft; 
-                        
-                        let statusHTML = '';
-                        let daysBg = '';
-                        let daysText = '';
+                    const contactIcon = cust.platform === 'Telegram' ? 'fa-telegram' : (cust.platform === 'Facebook' ? 'fa-facebook' : 'fa-tiktok');
+                    const contactLink = cust.platform === 'Telegram' ? `https://t.me/${cust.contact.replace('@','')}` : cust.contact;
 
-                        if (daysLeft < 0) {
-                            stats.critical++;
-                            daysBg = 'bg-red-50 text-red-600 border border-red-100';
-                            daysText = 'Expired';
-                        }
-                        else if (daysLeft <= 1) {
-                            stats.critical++;
-                            daysBg = 'bg-red-50 text-red-600 border border-red-100';
-                            daysText = `${daysLeft} Day Left`;
-                        }
-                        else if (daysLeft <= 7) {
-                            stats.warning++;
-                            daysBg = 'bg-orange-50 text-orange-600 border border-orange-100';
-                            daysText = `${daysLeft} Days`;
-                        }
-                        else {
-                            stats.active++;
-                            daysBg = 'bg-gray-50 text-gray-700 border border-gray-200';
-                            daysText = `${daysLeft} Days`;
-                        }
-
-                        const contactIcon = cust.platform === 'Telegram' ? 'fa-telegram' : (cust.platform === 'Facebook' ? 'fa-facebook' : 'fa-tiktok');
-                        const contactLink = cust.platform === 'Telegram' ? `https://t.me/${cust.contact.replace('@','')}` : cust.contact;
-
-                        customersHTML += `
-                            <div class="customer-item p-3.5 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors" 
-                                data-customer="${cust.customers.toLowerCase()}" data-platform="${cust.platform}">
-                                <div class="flex justify-between items-start mb-2">
-                                    <p class="text-sm font-bold text-gray-900 truncate pr-2 flex-1">${cust.customers}</p>
-                                    <div class="flex items-center gap-2 flex-shrink-0">
-                                        <div class="px-2 py-1 rounded-md text-xs font-bold shadow-sm ${daysBg}">
+                    // UPDATED CUSTOMER ITEM LAYOUT
+                    customersHTML += `
+                        <div class="customer-item p-3 border border-gray-50 rounded-xl bg-gray-50/40 hover:bg-gray-50/80 transition-colors flex flex-col gap-2" 
+                             data-customer="${cust.customers.toLowerCase()}" data-platform="${cust.platform}">
+                            
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] font-bold text-gray-900 truncate">${cust.customers}</p>
+                                    <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                        <div class="px-1.5 py-0.5 rounded-md text-[9px] font-bold shadow-sm border whitespace-nowrap ${daysBg}">
                                             <i class="fa-regular fa-clock mr-1 opacity-70"></i>${daysText}
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-between items-end">
-                                    <div>
-                                        <a href="${contactLink}" target="_blank" class="text-[11px] text-blue-600 hover:text-blue-800 flex items-center font-medium mb-1 w-fit bg-blue-50 px-2 py-0.5 rounded border border-blue-100 transition-colors">
-                                            <i class="fa-brands ${contactIcon} mr-1.5"></i> ${cust.contact}
+                                        <a href="${contactLink}" target="_blank" class="text-[9px] text-blue-600 hover:text-blue-800 flex items-center font-medium bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 transition-colors whitespace-nowrap truncate max-w-[130px]">
+                                            <i class="fa-brands ${contactIcon} mr-1"></i> ${cust.contact}
                                         </a>
-                                        <div class="text-[10px] text-gray-500 font-medium">Ends: <span class="text-gray-700">${cleanDateString(cust.endDate)}</span></div>
                                     </div>
-                                    <div class="flex gap-1.5">
-                                        <button onclick="openEditModal(${cust.rowNumber})" class="w-8 h-8 rounded-lg bg-white text-blue-600 border border-gray-200 shadow-sm hover:bg-blue-50 hover:border-blue-200 transition flex items-center justify-center"><i class="fa-solid fa-pen text-[11px]"></i></button>
-                                        <button onclick="openDeleteModal(${cust.rowNumber})" class="w-8 h-8 rounded-lg bg-white text-red-500 border border-gray-200 shadow-sm hover:bg-red-50 hover:border-red-200 transition flex items-center justify-center"><i class="fa-solid fa-trash text-[11px]"></i></button>
-                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1.5 flex-shrink-0 pt-0.5">
+                                    <button onclick="openEditModal(${cust.rowNumber})" class="w-7 h-7 rounded-lg bg-white text-blue-600 border border-gray-200 shadow-sm hover:bg-blue-50 hover:border-blue-200 transition flex items-center justify-center"><i class="fa-solid fa-pen text-[9px]"></i></button>
+                                    <button onclick="openDeleteModal(${cust.rowNumber})" class="w-7 h-7 rounded-lg bg-white text-red-500 border border-gray-200 shadow-sm hover:bg-red-50 hover:border-red-200 transition flex items-center justify-center"><i class="fa-solid fa-trash text-[9px]"></i></button>
                                 </div>
                             </div>
-                        `;
-                    });
-
-                    let cardThemeClass = 'bg-white border-gray-100 shadow-sm';
-                    let iconBgClass = 'bg-blue-100 text-blue-600';
-                    let alertBadge = '';
-                    
-                    if (minDaysLeft < 0) {
-                        cardThemeClass = 'bg-red-50 border-red-200 shadow-sm';
-                        iconBgClass = 'bg-red-200 text-red-700';
-                        alertBadge = '<span class="ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-red-600 text-white rounded animate-pulse shadow-sm">EXPIRED</span>';
-                    } else if (minDaysLeft <= 1) {
-                        cardThemeClass = 'bg-red-50 border-red-200 shadow-sm';
-                        iconBgClass = 'bg-red-200 text-red-700';
-                        alertBadge = '<span class="ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-red-600 text-white rounded animate-pulse shadow-sm">CRITICAL</span>';
-                    } else if (minDaysLeft <= 7) {
-                        cardThemeClass = 'bg-orange-50 border-orange-200 shadow-sm';
-                        iconBgClass = 'bg-orange-200 text-orange-700';
-                        alertBadge = '<span class="ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-orange-500 text-white rounded shadow-sm">WARNING</span>';
-                    }
-
-                    const isFull = customers.length >= limit;
-                    const quotaClass = isFull ? 'bg-red-100 text-red-700 border-red-200' : 'bg-gray-100 text-gray-600 border-gray-200';
-                    
-                    let mgrStatsBadges = '';
-                    if(stats.critical > 0) mgrStatsBadges += `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 border border-red-200" title="Critical/Expired"><i class="fa-solid fa-circle-exclamation mr-1"></i>${stats.critical}</span>`;
-                    if(stats.warning > 0) mgrStatsBadges += `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 border border-orange-200" title="Warning (<=7 Days)"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${stats.warning}</span>`;
-                    if(stats.active > 0) mgrStatsBadges += `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-700 border border-emerald-200" title="Active"><i class="fa-solid fa-check mr-1"></i>${stats.active}</span>`;
-
-                    container.innerHTML += `
-                        <div class="manager-card rounded-2xl overflow-hidden transition-all duration-200 ${cardThemeClass}" data-manager="${managerEmail.toLowerCase()}">
-                            <div class="p-3.5 sm:p-4 flex justify-between items-center cursor-pointer select-none relative" onclick="toggleAccordion('mgr${index}')">
-                                <div class="flex items-center gap-3 w-full overflow-hidden">
-                                    <div class="w-11 h-11 rounded-full ${iconBgClass} flex items-center justify-center flex-shrink-0 shadow-inner border border-white/50">
-                                        <i class="fa-solid fa-user-tie text-lg"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0 pr-2">
-                                        <div class="flex items-center flex-wrap gap-1.5">
-                                            <h3 class="text-sm font-bold text-gray-900 truncate max-w-[65%]">${managerEmail}</h3>
-                                            ${alertBadge}
-                                        </div>
-                                        <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                                            <span class="text-[9px] font-bold px-2 py-0.5 rounded-md border ${quotaClass}">
-                                                <i class="fa-solid fa-users mr-1 opacity-70"></i> ${customers.length}/${limit}
-                                            </span>
-                                            ${mgrStatsBadges}
-                                        </div>
-                                        ${mgrDatesDisplay}
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-1.5 flex-shrink-0 relative z-10">
-                                    <div class="flex flex-col gap-1 mr-0.5">
-                                        <button onclick="openEditManagerModal('${managerEmail}', event)" title="Edit Manager" class="w-7 h-7 rounded-full bg-yellow-50 text-yellow-600 hover:bg-yellow-500 hover:text-white flex items-center justify-center shadow-sm border border-yellow-100 transition-colors">
-                                            <i class="fa-solid fa-pen text-[9px]"></i>
-                                        </button>
-                                        <button onclick="prepAddUserForManager('${managerEmail}', event)" title="Add User" class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center shadow-sm border border-blue-100 transition-colors">
-                                            <i class="fa-solid fa-user-plus text-[10px]"></i>
-                                        </button>
-                                    </div>
-                                    <button onclick="openDeleteManagerModal('${managerEmail}', event)" title="Delete Manager" class="w-7 h-7 rounded-full bg-red-50 text-red-500 hover:bg-red-600 hover:text-white flex items-center justify-center shadow-sm border border-red-100 transition-colors mr-1">
-                                        <i class="fa-solid fa-trash-can text-[10px]"></i>
-                                    </button>
-                                    <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center shadow-sm border border-gray-200">
-                                        <i id="icon-mgr${index}" class="fa-solid fa-chevron-down text-gray-500 text-xs rotate-0 transition-transform duration-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="content-mgr${index}" class="accordion-content bg-white border-t border-gray-100">
-                                <div class="p-2 space-y-1">${customersHTML}</div>
+                            
+                            <div class="flex justify-between items-center pt-1.5 border-t border-gray-100/60 mt-0.5">
+                                <div class="text-[10px] text-gray-500 font-medium">Ends: <span class="text-gray-700">${cleanDateString(cust.endDate)}</span></div>
                             </div>
                         </div>
                     `;
-                }
-            }
+                });
 
-            function filterDashboard() {
-                const searchTxt = document.getElementById('searchInput').value.toLowerCase();
-                const platFilter = document.getElementById('platformFilter').value;
+                let cardThemeClass = 'bg-white border-gray-100 shadow-sm';
+                let iconBgClass = 'bg-blue-100 text-blue-600';
+                let alertBadge = '';
                 
-                document.querySelectorAll('.manager-card').forEach(card => {
-                    const mgrMail = card.getAttribute('data-manager');
-                    let hasVisible = false;
+                if (minDaysLeft < 0) {
+                    cardThemeClass = 'bg-red-50 border-red-200 shadow-sm';
+                    iconBgClass = 'bg-red-200 text-red-700';
+                    alertBadge = '<span class="ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-red-600 text-white rounded animate-pulse shadow-sm whitespace-nowrap">EXPIRED</span>';
+                } else if (minDaysLeft <= 1) {
+                    cardThemeClass = 'bg-red-50 border-red-200 shadow-sm';
+                    iconBgClass = 'bg-red-200 text-red-700';
+                    alertBadge = '<span class="ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-red-600 text-white rounded animate-pulse shadow-sm whitespace-nowrap">CRITICAL</span>';
+                } else if (minDaysLeft <= 7) {
+                    cardThemeClass = 'bg-orange-50 border-orange-200 shadow-sm';
+                    iconBgClass = 'bg-orange-200 text-orange-700';
+                    alertBadge = '<span class="ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-orange-500 text-white rounded shadow-sm whitespace-nowrap">WARNING</span>';
+                }
 
-                    card.querySelectorAll('.customer-item').forEach(item => {
-                        const custMail = item.getAttribute('data-customer');
-                        const plat = item.getAttribute('data-platform');
-                        
-                        const matchSearch = mgrMail.includes(searchTxt) || custMail.includes(searchTxt);
-                        const matchPlat = platFilter === 'All' || plat === platFilter;
+                const isFull = customers.length >= limit;
+                const quotaClass = isFull ? 'bg-red-100 text-red-700 border-red-200' : 'bg-gray-100 text-gray-600 border-gray-200';
+                
+                let mgrStatsBadges = '';
+                if(stats.critical > 0) mgrStatsBadges += `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 border border-red-200 whitespace-nowrap" title="Critical/Expired"><i class="fa-solid fa-circle-exclamation mr-1"></i>${stats.critical}</span>`;
+                if(stats.warning > 0) mgrStatsBadges += `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 border border-orange-200 whitespace-nowrap" title="Warning (<=7 Days)"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${stats.warning}</span>`;
+                if(stats.active > 0) mgrStatsBadges += `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-700 border border-emerald-200 whitespace-nowrap" title="Active"><i class="fa-solid fa-check mr-1"></i>${stats.active}</span>`;
 
-                        if (matchSearch && matchPlat) {
-                            item.style.display = 'flex';
-                            hasVisible = true;
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
+                // UPDATED MANAGER CARD HEADER LAYOUT
+                container.innerHTML += `
+                    <div class="manager-card rounded-2xl overflow-hidden transition-all duration-200 ${cardThemeClass}" data-manager="${managerEmail.toLowerCase()}">
+                        <div class="p-3 sm:p-4 flex justify-between items-start cursor-pointer select-none relative" onclick="toggleAccordion('mgr${index}')">
+                            <div class="flex items-start gap-2.5 w-full overflow-hidden">
+                                <div class="w-10 h-10 mt-0.5 rounded-full ${iconBgClass} flex items-center justify-center flex-shrink-0 shadow-inner border border-white/50">
+                                    <i class="fa-solid fa-user-tie text-lg"></i>
+                                </div>
+                                <div class="flex-1 min-w-0 pr-1">
+                                    <div class="flex items-center flex-wrap gap-1.5 mb-1.5">
+                                        <h3 class="text-[13px] sm:text-sm font-bold text-gray-900 truncate max-w-[130px] sm:max-w-full">${managerEmail}</h3>
+                                        ${alertBadge}
+                                    </div>
+                                    <div class="flex items-center flex-wrap gap-1.5 mb-1.5">
+                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${quotaClass} whitespace-nowrap">
+                                            <i class="fa-solid fa-users mr-1 opacity-70"></i> ${customers.length}/${limit}
+                                        </span>
+                                        ${mgrStatsBadges}
+                                    </div>
+                                    ${mgrDatesDisplay}
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons: 2x2 Grid for Mobile Optimization -->
+                            <div class="grid grid-cols-2 gap-1.5 flex-shrink-0 ml-1 relative z-10">
+                                <button onclick="openEditManagerModal('${managerEmail}', event)" title="Edit Manager" class="w-7 h-7 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-500 hover:text-white flex items-center justify-center shadow-sm border border-yellow-100 transition-colors">
+                                    <i class="fa-solid fa-pen text-[9px]"></i>
+                                </button>
+                                <button onclick="prepAddUserForManager('${managerEmail}', event)" title="Add User" class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center shadow-sm border border-blue-100 transition-colors">
+                                    <i class="fa-solid fa-user-plus text-[10px]"></i>
+                                </button>
+                                <button onclick="openDeleteManagerModal('${managerEmail}', event)" title="Delete Manager" class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-600 hover:text-white flex items-center justify-center shadow-sm border border-red-100 transition-colors">
+                                    <i class="fa-solid fa-trash-can text-[10px]"></i>
+                                </button>
+                                <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-200">
+                                    <i id="icon-mgr${index}" class="fa-solid fa-chevron-down text-gray-500 text-xs rotate-0 transition-transform duration-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="content-mgr${index}" class="accordion-content bg-white border-t border-gray-100">
+                            <div class="p-2 space-y-1.5">${customersHTML}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
 
-                    if (hasVisible) {
-                        card.style.display = 'block';
-                        if(searchTxt !== '') {
-                            card.querySelector('.accordion-content').classList.add('expanded');
-                            card.querySelector('.fa-chevron-down').classList.add('rotate-180');
-                        }
+        function filterDashboard() {
+            const searchTxt = document.getElementById('searchInput').value.toLowerCase();
+            const platFilter = document.getElementById('platformFilter').value;
+            
+            document.querySelectorAll('.manager-card').forEach(card => {
+                const mgrMail = card.getAttribute('data-manager');
+                let hasVisible = false;
+
+                card.querySelectorAll('.customer-item').forEach(item => {
+                    const custMail = item.getAttribute('data-customer');
+                    const plat = item.getAttribute('data-platform');
+                    
+                    const matchSearch = mgrMail.includes(searchTxt) || custMail.includes(searchTxt);
+                    const matchPlat = platFilter === 'All' || plat === platFilter;
+
+                    if (matchSearch && matchPlat) {
+                        item.style.display = 'flex';
+                        hasVisible = true;
                     } else {
-                        card.style.display = 'none';
+                        item.style.display = 'none';
                     }
                 });
-            }
-        </script>
-    </body>
-    </html>
+
+                if (hasVisible) {
+                    card.style.display = 'block';
+                    if(searchTxt !== '') {
+                        card.querySelector('.accordion-content').classList.add('expanded');
+                        card.querySelector('.fa-chevron-down').classList.add('rotate-180');
+                    }
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
