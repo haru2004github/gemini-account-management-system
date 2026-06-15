@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Invite Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
+        body { font-family: 'Padauk', sans-serif; background-color: #f4f6f8; }
+        .spinner { border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; width: 20px; height: 20px; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .accordion-content { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        .accordion-content.expanded { max-height: 2000px; opacity: 1; overflow: visible; }
+        .rotate-180 { transform: rotate(180deg); transition: transform 0.3s ease; }
+        .rotate-0 { transform: rotate(0deg); transition: transform 0.3s ease; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased p-3 md:p-6 lg:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 flex items-center"><i class="fa-solid fa-gem text-blue-600 mr-2.5"></i>Invite Manager</h1>
+                <p class="text-sm text-gray-500 mt-1">Efficient Subscriptions Tracking System</p>
+            </div>
+            <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+                <button id="testBotBtn" onclick="testTelegramBot()" class="w-full sm:w-auto bg-gray-50 text-gray-700 px-5 py-2.5 rounded-xl font-bold hover:bg-gray-100 active:bg-gray-200 transition flex items-center justify-center shadow-sm border border-gray-200">
+                    <i class="fa-brands fa-telegram text-blue-500 text-lg mr-2"></i> Test Bot
+                </button>
+                <button onclick="fetchData()" class="w-full sm:w-auto bg-blue-50 text-blue-600 px-5 py-2.5 rounded-xl font-bold hover:bg-blue-100 active:bg-blue-200 transition flex items-center justify-center shadow-sm border border-blue-100">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Column: Entry Form -->
+            <div class="lg:col-span-4 bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
+                <h2 class="text-lg font-bold text-gray-800 mb-5 border-b border-gray-100 pb-3 flex items-center"><i class="fa-solid fa-user-plus text-blue-500 mr-2"></i> New Invite</h2>
+                <form id="inviteForm" class="space-y-4">
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Manager Email</label>
+                        <input type="email" id="managerEmail" list="managerList" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="manager@gmail.com">
+                        <datalist id="managerList"></datalist>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Customer Email</label>
+                        <input type="email" id="customerEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="customer@gmail.com">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Platform</label>
+                            <select id="platform" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="updatePlatformPlaceholder('platform', 'contactInfo')">
+                                <option value="Telegram">Telegram</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="TikTok">TikTok</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Contact ID</label>
+                            <input type="text" id="contactInfo" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="@username">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Start Date</label>
+                            <input type="date" id="startDate" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('startDate', 'duration', 'endDate')">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Duration</label>
+                            <select id="duration" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" onchange="calculateEndDate('startDate', 'duration', 'endDate')">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">End Date</label>
+                        <input type="date" id="endDate" required class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition shadow-inner">
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold p-3.5 rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors flex justify-center items-center mt-6 shadow-md shadow-blue-200">
+                        <span><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save Record</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Column: Dashboard List -->
+            <div class="lg:col-span-8 flex flex-col gap-4">
+                
+                <!-- Filters Section -->
+                <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400"><i class="fa-solid fa-search"></i></span>
+                            <input type="text" id="searchInput" onkeyup="filterDashboard()" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Search Manager or Customer...">
+                        </div>
+                        <select id="platformFilter" onchange="filterDashboard()" class="w-full sm:w-40 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            <option value="All">All Platforms</option>
+                            <option value="Telegram">Telegram</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="TikTok">TikTok</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Cards Container -->
+                <div id="dashboardCards" class="space-y-4 pb-10">
+                    <div class="text-center py-12 bg-white rounded-2xl border border-gray-100">
+                        <span class="spinner !border-gray-200 !border-t-blue-600 w-8 h-8"></span>
+                        <p class="text-gray-500 text-sm mt-3 font-medium">Loading system data...</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-pen-to-square text-blue-600 mr-2"></i>Edit Subscription</h3>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-700 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm border border-gray-100"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="editForm" class="p-6 space-y-4">
+                <input type="hidden" id="editRowNumber">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Manager Email</label>
+                    <input type="email" id="editManagerEmail" list="editManagerList" required class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <datalist id="editManagerList"></datalist>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Customer Email</label>
+                    <input type="email" id="editCustomerEmail" required class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Platform</label>
+                        <select id="editPlatform" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="updatePlatformPlaceholder('editPlatform', 'editContactInfo')">
+                            <option value="Telegram">Telegram</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="TikTok">TikTok</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Contact Info</label>
+                        <input type="text" id="editContactInfo" required class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Start Date</label>
+                        <input type="date" id="editStartDate" required class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="calculateEndDate('editStartDate', 'editDuration', 'editEndDate')">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Duration</label>
+                        <select id="editDuration" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="calculateEndDate('editStartDate', 'editDuration', 'editEndDate')">
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">End Date</label>
+                    <input type="date" id="editEndDate" required class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-inner bg-gray-50">
+                </div>
+                
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold p-3 rounded-xl hover:bg-gray-200 transition">Cancel</button>
+                    <button type="submit" id="updateBtn" class="flex-1 bg-blue-600 text-white font-bold p-3 rounded-xl hover:bg-blue-700 transition flex justify-center items-center shadow-md shadow-blue-200">
+                        <span>Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer Delete Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-6 transform scale-100">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
+                <i class="fa-solid fa-trash-can text-2xl text-red-500"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Delete Record?</h3>
+            <p class="text-sm text-gray-500 mb-6">Are you sure you want to permanently delete this customer record? This cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold p-3 rounded-xl hover:bg-gray-200 transition">Cancel</button>
+                <button onclick="executeDelete()" id="confirmDeleteBtn" class="flex-1 bg-red-500 text-white font-bold p-3 rounded-xl hover:bg-red-600 transition flex justify-center items-center shadow-md shadow-red-200">
+                    <span>Delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manager Delete Modal -->
+    <div id="deleteManagerModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden text-center p-6 transform scale-100 border-2 border-red-100">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
+                <i class="fa-solid fa-user-xmark text-2xl text-red-600"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Delete Entire Manager?</h3>
+            <p class="text-sm text-gray-600 mb-2">You are about to delete <strong id="deleteManagerNameDisplay" class="text-gray-900"></strong>.</p>
+            <div class="bg-red-50 p-3 rounded-lg border border-red-100 mb-6">
+                <p class="text-xs text-red-700 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Warning: This will permanently delete ALL customer invites under this manager. This action cannot be reversed.</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteManagerModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold p-3 rounded-xl hover:bg-gray-200 transition">Cancel</button>
+                <button onclick="executeManagerDelete()" id="confirmManagerDeleteBtn" class="flex-1 bg-red-600 text-white font-bold p-3 rounded-xl hover:bg-red-700 transition flex justify-center items-center shadow-md shadow-red-200">
+                    <span>Delete All</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-y-24 opacity-0 z-50 flex items-center gap-3 font-medium">
+        <i class="fa-solid fa-circle-check" id="toastIcon"></i>
+        <span id="toastMsg">Success!</span>
+    </div>
+
+    <script>
+        // --- 🚨 သင်၏ Web App URL ကို အောက်တွင် ပြောင်းထည့်ပါ 🚨 ---
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbyT3FPGVx5AS0qBFHoZYyJyV_ILgVdwiLmlYFeJdDB6dru_yE8CYilWvHBDoEcEohFq0Q/exec';
+        
+        let globalData = []; 
+        let targetDeleteRow = null;
+        let targetDeleteManager = null; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const durationOptions = Array.from({length: 18}, (_, i) => `<option value="${i+1}">${i+1} ${i===0?'Month':'Months'}</option>`).join('');
+            document.getElementById('duration').innerHTML = durationOptions;
+            document.getElementById('editDuration').innerHTML = durationOptions;
+            
+            document.getElementById('startDate').valueAsDate = new Date();
+            calculateEndDate('startDate', 'duration', 'endDate');
+            if(scriptUrl !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') fetchData();
+        });
+
+        function cleanDateString(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const d = new Date(dateStr);
+                if(isNaN(d)) return dateStr;
+                return d.toISOString().split('T')[0];
+            } catch(e) { return dateStr; }
+        }
+
+        function updatePlatformPlaceholder(platId, inputId) {
+            const plat = document.getElementById(platId).value;
+            document.getElementById(inputId).placeholder = plat === 'Telegram' ? "@username or ID" : "Profile Link (URL)";
+        }
+
+        function calculateEndDate(startId, durId, endId) {
+            const startDateStr = document.getElementById(startId).value;
+            const durationStr = document.getElementById(durId).value;
+            if(!startDateStr || !durationStr) return;
+            let startDate = new Date(startDateStr);
+            let endDate = new Date(startDate);
+            endDate.setMonth(startDate.getMonth() + parseInt(durationStr));
+            document.getElementById(endId).value = endDate.toISOString().split('T')[0];
+        }
+
+        function getDaysLeft(endDateStr) {
+            const end = new Date(cleanDateString(endDateStr));
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            return Math.ceil((end - today) / (1000 * 60 * 60 * 24)); 
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            document.getElementById('toastMsg').textContent = msg;
+            
+            if(type === 'error') {
+                toast.className = 'fixed bottom-6 right-6 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 z-50 flex items-center gap-3 font-medium';
+                icon.className = 'fa-solid fa-triangle-exclamation text-white';
+            } else {
+                toast.className = 'fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 z-50 flex items-center gap-3 font-medium';
+                icon.className = 'fa-solid fa-circle-check text-green-400 text-lg';
+            }
+            
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-24', 'opacity-0'); }, 3000);
+        }
+
+        function toggleAccordion(id) {
+            const content = document.getElementById(`content-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            content.classList.toggle('expanded');
+            icon.classList.toggle('rotate-180');
+        }
+
+        function openEditModal(rowNumber) {
+            const record = globalData.find(r => r.rowNumber === rowNumber);
+            if(!record) return;
+            document.getElementById('editRowNumber').value = record.rowNumber;
+            document.getElementById('editManagerEmail').value = record.manager;
+            document.getElementById('editCustomerEmail').value = record.customers;
+            document.getElementById('editPlatform').value = record.platform;
+            document.getElementById('editContactInfo').value = record.contact;
+            document.getElementById('editStartDate').value = cleanDateString(record.startDate);
+            document.getElementById('editDuration').value = record.duration;
+            document.getElementById('editEndDate').value = cleanDateString(record.endDate);
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+        function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); document.getElementById('editModal').classList.remove('flex'); }
+
+        function openDeleteModal(rowNumber) {
+            targetDeleteRow = rowNumber;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+        }
+        function closeDeleteModal() { targetDeleteRow = null; document.getElementById('deleteModal').classList.add('hidden'); document.getElementById('deleteModal').classList.remove('flex'); }
+
+        function openDeleteManagerModal(managerEmail, event) {
+            event.stopPropagation(); 
+            targetDeleteManager = managerEmail;
+            document.getElementById('deleteManagerNameDisplay').textContent = managerEmail;
+            document.getElementById('deleteManagerModal').classList.remove('hidden');
+            document.getElementById('deleteManagerModal').classList.add('flex');
+        }
+        function closeDeleteManagerModal() { 
+            targetDeleteManager = null; 
+            document.getElementById('deleteManagerModal').classList.add('hidden'); 
+            document.getElementById('deleteManagerModal').classList.remove('flex'); 
+        }
+
+        document.getElementById('inviteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
+
+            const data = {
+                action: 'add',
+                manager: document.getElementById('managerEmail').value.trim(),
+                customers: document.getElementById('customerEmail').value.trim(), 
+                platform: document.getElementById('platform').value,
+                contact: document.getElementById('contactInfo').value.trim(),
+                startDate: document.getElementById('startDate').value,
+                duration: document.getElementById('duration').value,
+                endDate: document.getElementById('endDate').value
+            };
+
+            await sendData(data, btn, `<span><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save Record</span>`, 'Record saved successfully!');
+            document.getElementById('customerEmail').value = '';
+            document.getElementById('contactInfo').value = '';
+        });
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('updateBtn');
+            btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
+
+            const data = {
+                action: 'update',
+                rowNumber: document.getElementById('editRowNumber').value,
+                manager: document.getElementById('editManagerEmail').value.trim(),
+                customers: document.getElementById('editCustomerEmail').value.trim(), 
+                platform: document.getElementById('editPlatform').value,
+                contact: document.getElementById('editContactInfo').value.trim(),
+                startDate: document.getElementById('editStartDate').value,
+                duration: document.getElementById('editDuration').value,
+                endDate: document.getElementById('editEndDate').value
+            };
+
+            const success = await sendData(data, btn, `<span>Save Changes</span>`, 'Record updated successfully!');
+            if(success) closeEditModal();
+        });
+
+        async function executeDelete() {
+            if(!targetDeleteRow) return;
+            const btn = document.getElementById('confirmDeleteBtn');
+            btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
+
+            const data = { action: 'delete', rowNumber: targetDeleteRow };
+            const success = await sendData(data, btn, `<span>Delete</span>`, 'Record deleted permanently.');
+            if(success) closeDeleteModal();
+        }
+
+        async function executeManagerDelete() {
+            if(!targetDeleteManager) return;
+            const btn = document.getElementById('confirmManagerDeleteBtn');
+            btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
+
+            const data = { action: 'deleteManager', manager: targetDeleteManager };
+            const success = await sendData(data, btn, `<span>Delete All</span>`, 'Manager and all records deleted permanently.');
+            if(success) closeDeleteManagerModal();
+        }
+
+        async function sendData(data, btnElement, originalBtnHTML, successMsg) {
+            try {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(data),
+                    redirect: 'follow'
+                });
+                const result = JSON.parse(await response.text());
+                if(result.status === 'success') {
+                    showToast(successMsg);
+                    fetchData(); 
+                    return true;
+                } else throw new Error();
+            } catch (error) {
+                showToast('Execution Error. Check Network/Script.', 'error');
+                return false;
+            } finally {
+                btnElement.innerHTML = originalBtnHTML;
+                btnElement.disabled = false;
+            }
+        }
+
+        async function testTelegramBot() {
+            if (scriptUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                showToast('Please set Web App URL first.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('testBotBtn');
+            const originalBtnHTML = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner !border-gray-400 !border-t-blue-600 w-5 h-5 mr-2"></span> Testing...`;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'testTelegram' }),
+                    redirect: 'follow'
+                });
+                const result = JSON.parse(await response.text());
+                
+                if (result.status === 'success') {
+                    showToast('Test message sent to Telegram!', 'success');
+                } else {
+                    throw new Error(result.message || 'Error executing action');
+                }
+            } catch (error) {
+                showToast('Failed to send test message.', 'error');
+                console.error(error);
+            } finally {
+                btn.innerHTML = originalBtnHTML;
+                btn.disabled = false;
+            }
+        }
+
+        async function fetchData() {
+            if (scriptUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') return;
+            const container = document.getElementById('dashboardCards');
+            container.innerHTML = `<div class="text-center py-12 bg-white rounded-2xl border border-gray-100"><span class="spinner !border-gray-200 !border-t-blue-600 w-8 h-8"></span><p class="text-gray-500 text-sm mt-3 font-medium">Syncing data...</p></div>`;
+
+            try {
+                const fetchUrl = `${scriptUrl}?action=get&t=${new Date().getTime()}`;
+                const response = await fetch(fetchUrl, { method: 'GET', redirect: 'follow' });
+                globalData = JSON.parse(await response.text());
+                
+                const uniqueManagers = [...new Set(globalData.map(item => item.manager))];
+                const optionsHtml = uniqueManagers.map(mgr => `<option value="${mgr}">`).join('');
+                document.getElementById('managerList').innerHTML = optionsHtml;
+                document.getElementById('editManagerList').innerHTML = optionsHtml;
+
+                renderCards(globalData);
+                filterDashboard(); 
+            } catch (error) {
+                container.innerHTML = `<div class="text-center py-10 bg-white rounded-2xl border border-red-200"><p class="text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i><br>Connection Failed</p><p class="text-xs text-gray-500 mt-2">Check your Web App URL.</p></div>`;
+            }
+        }
+
+        function renderCards(dataToRender) {
+            const container = document.getElementById('dashboardCards');
+            container.innerHTML = '';
+            
+            if(dataToRender.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 bg-white rounded-2xl border border-gray-100"><p class="text-gray-500 text-sm font-medium">No records found.</p></div>`;
+                return;
+            }
+
+            const groupedData = {};
+            dataToRender.forEach(row => {
+                const mgr = row.manager; 
+                if(!groupedData[mgr]) groupedData[mgr] = [];
+                groupedData[mgr].push(row);
+            });
+
+            let index = 0;
+            for (const [managerEmail, customers] of Object.entries(groupedData)) {
+                index++;
+                const limit = 5;
+                const sortedCustomers = [...customers].reverse();
+                
+                let minDaysLeft = Infinity;
+                let customersHTML = '';
+
+                sortedCustomers.forEach(cust => {
+                    const daysLeft = getDaysLeft(cust.endDate);
+                    if (daysLeft < minDaysLeft) minDaysLeft = daysLeft; 
+                    
+                    let statusHTML = '';
+                    if (daysLeft < 0) statusHTML = `<span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-red-100 text-red-700">Expired</span>`;
+                    else if (daysLeft <= 1) statusHTML = `<span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-red-100 text-red-700 animate-pulse">Critical</span>`;
+                    else if (daysLeft <= 7) statusHTML = `<span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-yellow-100 text-yellow-800">Warning</span>`;
+                    else statusHTML = `<span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-emerald-100 text-emerald-800">Active</span>`;
+
+                    const contactIcon = cust.platform === 'Telegram' ? 'fa-telegram' : (cust.platform === 'Facebook' ? 'fa-facebook' : 'fa-tiktok');
+                    const contactLink = cust.platform === 'Telegram' ? `https://t.me/${cust.contact.replace('@','')}` : cust.contact;
+
+                    customersHTML += `
+                        <div class="customer-item p-4 border-b border-gray-100 last:border-0 hover:bg-white/80 transition-colors flex flex-col sm:flex-row justify-between sm:items-center gap-3" 
+                             data-customer="${cust.customers.toLowerCase()}" data-platform="${cust.platform}">
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-gray-900 mb-0.5">${cust.customers}</p>
+                                <a href="${contactLink}" target="_blank" class="text-xs text-blue-600 hover:underline flex items-center w-fit font-medium">
+                                    <i class="fa-brands ${contactIcon} mr-1.5"></i> ${cust.contact}
+                                </a>
+                            </div>
+                            <div class="flex justify-between sm:justify-end items-center gap-4 bg-white sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-none border border-gray-100 sm:border-0 shadow-sm sm:shadow-none w-full sm:w-auto">
+                                <div class="text-xs text-gray-500 text-left sm:text-right">
+                                    <div class="mb-1 text-[11px] font-medium text-gray-400 uppercase tracking-wider">End: ${cleanDateString(cust.endDate)}</div>
+                                    <div class="flex items-center sm:justify-end gap-2">
+                                        <span class="font-bold ${daysLeft <= 7 ? 'text-red-600' : 'text-gray-700'}">${daysLeft} Days</span>
+                                        ${statusHTML}
+                                    </div>
+                                </div>
+                                <div class="flex flex-col sm:flex-row items-center gap-1.5 border-l border-gray-100 pl-3">
+                                    <button onclick="openEditModal(${cust.rowNumber})" class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition flex items-center justify-center"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                    <button onclick="openDeleteModal(${cust.rowNumber})" class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition flex items-center justify-center"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                let cardThemeClass = 'bg-white border-gray-100 shadow-sm';
+                let iconBgClass = 'bg-blue-100 text-blue-600';
+                let alertBadge = '';
+                
+                if (minDaysLeft < 0) {
+                    cardThemeClass = 'bg-red-50 border-red-200 shadow-sm';
+                    iconBgClass = 'bg-red-200 text-red-700';
+                    alertBadge = '<span class="ml-2 px-2 py-0.5 text-[10px] font-bold bg-red-600 text-white rounded animate-pulse shadow-sm">EXPIRED</span>';
+                } else if (minDaysLeft <= 1) {
+                    cardThemeClass = 'bg-red-50 border-red-200 shadow-sm';
+                    iconBgClass = 'bg-red-200 text-red-700';
+                    alertBadge = '<span class="ml-2 px-2 py-0.5 text-[10px] font-bold bg-red-600 text-white rounded animate-pulse shadow-sm">CRITICAL</span>';
+                } else if (minDaysLeft <= 7) {
+                    cardThemeClass = 'bg-orange-50 border-orange-200 shadow-sm';
+                    iconBgClass = 'bg-orange-200 text-orange-700';
+                    alertBadge = '<span class="ml-2 px-2 py-0.5 text-[10px] font-bold bg-orange-500 text-white rounded shadow-sm">WARNING</span>';
+                }
+
+                const isFull = customers.length >= limit;
+                const quotaClass = isFull ? 'bg-red-100 text-red-700 border-red-200' : 'bg-green-100 text-green-700 border-green-200';
+
+                container.innerHTML += `
+                    <div class="manager-card rounded-2xl overflow-hidden transition-all duration-200 ${cardThemeClass}" data-manager="${managerEmail.toLowerCase()}">
+                        <div class="p-4 md:p-5 flex justify-between items-center cursor-pointer hover:bg-black/5 select-none" onclick="toggleAccordion('mgr${index}')">
+                            <div class="flex items-center gap-3 sm:gap-4 w-full">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full ${iconBgClass} flex items-center justify-center flex-shrink-0 shadow-inner">
+                                    <i class="fa-solid fa-user-tie text-lg sm:text-xl"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center flex-wrap gap-1">
+                                        <h3 class="text-sm sm:text-base font-bold text-gray-900 truncate max-w-full">${managerEmail}</h3>
+                                        ${alertBadge}
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-1 sm:mt-1.5">
+                                        <span class="text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border shadow-sm ${quotaClass}">
+                                            <i class="fa-solid fa-users mr-1"></i> ${customers.length} / ${limit}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="openDeleteManagerModal('${managerEmail}', event)" title="Delete Manager" class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center flex-shrink-0 shadow-sm border border-red-200 transition-colors">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                                <div class="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center flex-shrink-0 shadow-sm border border-black/5">
+                                    <i id="icon-mgr${index}" class="fa-solid fa-chevron-down text-gray-600 text-sm rotate-0 transition-transform duration-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="content-mgr${index}" class="accordion-content bg-gray-50/50 border-t border-black/5">
+                            <div class="p-2">${customersHTML}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function filterDashboard() {
+            const searchTxt = document.getElementById('searchInput').value.toLowerCase();
+            const platFilter = document.getElementById('platformFilter').value;
+            
+            document.querySelectorAll('.manager-card').forEach(card => {
+                const mgrMail = card.getAttribute('data-manager');
+                let hasVisible = false;
+
+                card.querySelectorAll('.customer-item').forEach(item => {
+                    const custMail = item.getAttribute('data-customer');
+                    const plat = item.getAttribute('data-platform');
+                    
+                    const matchSearch = mgrMail.includes(searchTxt) || custMail.includes(searchTxt);
+                    const matchPlat = platFilter === 'All' || plat === platFilter;
+
+                    if (matchSearch && matchPlat) {
+                        item.style.display = 'flex';
+                        hasVisible = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                if (hasVisible) {
+                    card.style.display = 'block';
+                    if(searchTxt !== '') {
+                        card.querySelector('.accordion-content').classList.add('expanded');
+                        card.querySelector('.fa-chevron-down').classList.add('rotate-180');
+                    }
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
