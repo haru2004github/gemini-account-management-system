@@ -28,7 +28,6 @@
 </head>
 <body class="text-gray-800 antialiased pb-20">
 
-    <!-- Top Header -->
     <div class="bg-white px-4 py-3 shadow-sm border-b border-gray-200 sticky top-0 z-30 flex justify-between items-center">
         <div>
             <h1 class="text-lg font-bold text-gray-900 flex items-center"><i class="fa-solid fa-gem text-blue-600 mr-2"></i>Invite Manager</h1>
@@ -46,7 +45,6 @@
 
     <div class="max-w-4xl mx-auto p-4 space-y-4">
         
-        <!-- Stats Dashboard -->
         <div class="grid grid-cols-2 gap-3">
             <div class="bg-gradient-to-br from-blue-50 to-white p-4 rounded-2xl border border-blue-100 shadow-sm flex flex-col items-center justify-center">
                 <i class="fa-solid fa-user-tie text-blue-400 mb-1"></i>
@@ -60,7 +58,6 @@
             </div>
         </div>
 
-        <!-- Filters Section -->
         <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2">
             <div class="relative flex-1">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-search"></i></span>
@@ -74,7 +71,6 @@
             </select>
         </div>
 
-        <!-- Cards Container (Main View) -->
         <div id="dashboardCards" class="space-y-3">
             <div class="text-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <span class="spinner !border-gray-200 !border-t-blue-600 w-8 h-8"></span>
@@ -84,12 +80,10 @@
 
     </div>
 
-    <!-- Floating Action Button (Mobile Friendly Add Button) -->
     <button onclick="openAddModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-300/50 flex items-center justify-center text-xl hover:bg-blue-700 active:scale-95 transition-all z-40 border-2 border-white">
         <i class="fa-solid fa-plus"></i>
     </button>
 
-    <!-- Add New Invite Modal -->
     <div id="addModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center z-50 transition-opacity">
         <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all mt-10 sm:mt-0">
             <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
@@ -114,7 +108,7 @@
                                 <option value="Facebook">Facebook</option>
                                 <option value="TikTok">TikTok</option>
                             </select>
-                            <input type="text" id="contactInfo" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="@username">
+                            <input type="text" id="contactInfo" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Chat ID (e.g. 123456)">
                         </div>
 
                         <div class="grid grid-cols-2 gap-3 mb-3">
@@ -143,7 +137,6 @@
         </div>
     </div>
 
-    <!-- Customer Edit Modal -->
     <div id="editModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center z-50">
         <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform mt-10 sm:mt-0">
             <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
@@ -170,7 +163,7 @@
                                 <option value="Facebook">Facebook</option>
                                 <option value="TikTok">TikTok</option>
                             </select>
-                            <input type="text" id="editContactInfo" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="text" id="editContactInfo" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Chat ID / Link">
                         </div>
 
                         <div class="grid grid-cols-2 gap-3 mb-3">
@@ -201,7 +194,6 @@
         </div>
     </div>
 
-    <!-- Manager Edit Modal (NEW) -->
     <div id="editManagerModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center z-50">
         <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform mt-10 sm:mt-0 border border-gray-100">
             <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 sticky top-0 z-10">
@@ -249,7 +241,6 @@
         </div>
     </div>
 
-    <!-- Delete Modals -->
     <div id="deleteModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden text-center p-6">
             <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -281,7 +272,6 @@
         </div>
     </div>
 
-    <!-- Toast -->
     <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 px-5 py-3 rounded-full shadow-2xl transform transition-all duration-300 -translate-y-24 opacity-0 z-[60] flex items-center gap-2 font-medium text-sm whitespace-nowrap">
         <i class="fa-solid fa-circle-check" id="toastIcon"></i>
         <span id="toastMsg">Success!</span>
@@ -317,7 +307,8 @@
 
         function updatePlatformPlaceholder(platId, inputId) {
             const plat = document.getElementById(platId).value;
-            document.getElementById(inputId).placeholder = plat === 'Telegram' ? "@username or ID" : "Profile Link (URL)";
+            // Chat ID အတွက် Placeholder ပြောင်းပေးခြင်း
+            document.getElementById(inputId).placeholder = plat === 'Telegram' ? "Chat ID (e.g. 123456789)" : "Profile Link (URL)";
         }
 
         function calculateEndDate(startId, durId, endId) {
@@ -364,7 +355,6 @@
             icon.classList.toggle('rotate-180');
         }
 
-        // --- STREAMING_CHUNK:Defining Event Listeners... ---
         // --- Modals Handlers ---
         function openAddModal() {
             document.getElementById('addModal').classList.remove('hidden');
@@ -453,7 +443,7 @@
             btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
 
             const mgrEmail = document.getElementById('managerEmail').value.trim();
-            const mgrDates = getExistingManagerDates(mgrEmail); // Maintain existing manager dates
+            const mgrDates = getExistingManagerDates(mgrEmail); 
 
             const data = {
                 action: 'add',
@@ -480,7 +470,7 @@
             btn.innerHTML = `<span class="spinner"></span>`; btn.disabled = true;
 
             const mgrEmail = document.getElementById('editManagerEmail').value.trim();
-            const mgrDates = getExistingManagerDates(mgrEmail); // Maintain existing manager dates
+            const mgrDates = getExistingManagerDates(mgrEmail); 
 
             const data = {
                 action: 'update',
@@ -598,7 +588,7 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Fetching Data & Updating UI... ---
+        // --- Fetch & Render ---
         async function fetchData() {
             if (scriptUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') return;
             const container = document.getElementById('dashboardCards');
@@ -651,7 +641,6 @@
                 let customersHTML = '';
                 let stats = { active: 0, warning: 0, critical: 0 };
                 
-                // Extract Manager Dates Information
                 let mgrDatesDisplay = '';
                 const recordWithMgrData = customers.find(c => c.managerStartDate || c.managerEndDate);
                 if (recordWithMgrData) {
@@ -697,9 +686,15 @@
                     }
 
                     const contactIcon = cust.platform === 'Telegram' ? 'fa-telegram' : (cust.platform === 'Facebook' ? 'fa-facebook' : 'fa-tiktok');
-                    const contactLink = cust.platform === 'Telegram' ? `https://t.me/${cust.contact.replace('@','')}` : cust.contact;
+                    
+                    // Telegram Chat ID ကို အသုံးပြု၍ Link ပြောင်းပေးခြင်း
+                    let contactLink = cust.contact;
+                    if (cust.platform === 'Telegram') {
+                       // ဂဏန်းတွေချည်းပဲဆိုရင် User ID အဖြစ် သတ်မှတ်ပြီး tg://user?id= ကို အသုံးပြုပါမည်။
+                       const isOnlyNumbers = /^\d+$/.test(cust.contact);
+                       contactLink = isOnlyNumbers ? `tg://user?id=${cust.contact}` : `https://t.me/${cust.contact.replace('@','')}`;
+                    }
 
-                    // UPDATED CUSTOMER ITEM LAYOUT
                     customersHTML += `
                         <div class="customer-item p-3 border border-gray-50 rounded-xl bg-gray-50/40 hover:bg-gray-50/80 transition-colors flex flex-col gap-2" 
                              data-customer="${cust.customers.toLowerCase()}" data-platform="${cust.platform}">
@@ -755,7 +750,6 @@
                 if(stats.warning > 0) mgrStatsBadges += `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 border border-orange-200 whitespace-nowrap" title="Warning (<=7 Days)"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${stats.warning}</span>`;
                 if(stats.active > 0) mgrStatsBadges += `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-700 border border-emerald-200 whitespace-nowrap" title="Active"><i class="fa-solid fa-check mr-1"></i>${stats.active}</span>`;
 
-                // UPDATED MANAGER CARD HEADER LAYOUT
                 container.innerHTML += `
                     <div class="manager-card rounded-2xl overflow-hidden transition-all duration-200 ${cardThemeClass}" data-manager="${managerEmail.toLowerCase()}">
                         <div class="p-3 sm:p-4 flex justify-between items-start cursor-pointer select-none relative" onclick="toggleAccordion('mgr${index}')">
@@ -778,7 +772,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Action Buttons: 2x2 Grid for Mobile Optimization -->
                             <div class="grid grid-cols-2 gap-1.5 flex-shrink-0 ml-1 relative z-10">
                                 <button onclick="openEditManagerModal('${managerEmail}', event)" title="Edit Manager" class="w-7 h-7 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-500 hover:text-white flex items-center justify-center shadow-sm border border-yellow-100 transition-colors">
                                     <i class="fa-solid fa-pen text-[9px]"></i>
